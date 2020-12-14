@@ -105,6 +105,21 @@ def OnFriendMsgs(message):
         print(var)
 
 
+def fun(info, group):
+    if str(group) not in history.keys():
+        history[str(group)] = "####"
+    if str(group) + "_count" not in history.keys():
+        history[str(group) + "_count"] = 0
+    if info == history[str(group)]:
+        history[str(group) + "_count"] = history[str(group) + "_count"] + 1
+    elif history[str(group) + "_count"] != 0:
+        if history[str(group) + "_count"] > 4:
+            ban = random.randint(1, history[str(group) + "_count"] + 1)
+            send(group, "共 " + str(history[str(group) + "_count"] + 1) + " 条复读，生成的随机数为 " + str(ban) + " .", 2, 0)
+        history[str(group) + "_count"] = 0
+    history[str(group)] = info
+
+
 @sio.on('OnGroupMsgs')
 def OnGroupMsgs(message):
     global msg_count
@@ -123,18 +138,6 @@ def OnGroupMsgs(message):
                 send(group, "机器狼 For QQ V1.0.2 BETA（Python3 Ver.）", 2, 0)
             elif info == "#存活确认":
                 send(group, "目前程序运行正常(｀・ω・´)", 2, 0)
-            if str(group) not in history.keys():
-                history[str(group)] = "####"
-            if str(group) + "_count" not in history.keys():
-                history[str(group) + "_count"] = 0
-            if info == history[str(group)]:
-                history[str(group) + "_count"] = history[str(group) + "_count"] + 1
-            elif history[str(group) + "_count"] != 0:
-                if history[str(group) + "_count"] > 4:
-                    ban = random.randint(1, history[str(group) + "_count"] + 1)
-                    send(group, "共 " + str(history[str(group) + "_count"] + 1) + " 条复读，建议禁言第 " + str(ban) + " 个", 2, 0)
-                history[str(group) + "_count"] = 0
-            history[str(group)] = info
         elif msg_type == 'AtMsg':
             info = json.loads(info)
             atUser = info['UserID'][0]
@@ -163,7 +166,13 @@ def OnGroupMsgs(message):
                     str(data['meta']['Location.Search']['lng']) + "," + str(data['meta']['Location.Search']['lat']))
                 send(message['CurrentPacket']['Data']['FromGroupId'], msg, 2,
                      message['CurrentPacket']['Data']['FromUserId'])
-
+        elif msg_type == 'PicMsg':
+            info = ""
+            tmp = json.loads(message['CurrentPacket']['Data']['Content'])['GroupPic']
+            for i in tmp:
+                print(i)
+                info += str(i['FileMd5'])
+        fun(info, group)
     except:
         var = traceback.format_exc()
         print(var)
